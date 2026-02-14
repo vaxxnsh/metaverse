@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/joho/godotenv"
 	"github.com/vaxxnsh/metaverse/internals/database"
 )
@@ -47,9 +44,11 @@ func main() {
 		log.Fatal("Error connecting with database")
 	}
 
-	apiCfg := apiConfig{
+	apiConfig := apiConfig{
 		DB: database.New(conn),
 	}
+
+	fmt.Printf("db conn: %s\n", apiConfig)
 
 	fmt.Printf("The Server is running on the port: %s\n", port)
 	router.Run(":" + port)
