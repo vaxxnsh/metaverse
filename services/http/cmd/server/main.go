@@ -48,7 +48,7 @@ func main() {
 		DB: database.New(conn),
 	}
 
-	fmt.Printf("db conn: %s\n", apiConfig)
+	fmt.Printf("db conn: %+v\n", apiConfig)
 
 	fmt.Printf("The Server is running on the port: %s\n", port)
 	router.Run(":" + port)
