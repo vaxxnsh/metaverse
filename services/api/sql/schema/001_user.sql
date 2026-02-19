@@ -3,6 +3,7 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
+    email TEXT NOT NULL,
     password TEXT NOT NULL,
     avatar_id UUID,
     role TEXT NOT NULL DEFAULT 'user',

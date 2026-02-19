@@ -3,7 +3,7 @@
 //   sqlc v1.30.0
 // source: users.sql
 
-package database
+package db
 
 import (
 	"context"
@@ -13,38 +13,37 @@ import (
 
 const createUser = `-- name: CreateUser :one
 
-INSERT INTO users(id, name, password, created_at, updated_at)
-VALUES($1,$2,$3,$4,$5)
-RETURNING id, name, created_at, updated_at
+INSERT INTO users(id, name, email, password, created_at, updated_at)
+VALUES($1,$2,$3,$4,$5,$6)
+RETURNING id, name, email, password, avatar_id, role, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	ID        pgtype.UUID
 	Name      string
+	Email     string
 	Password  string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
 
-type CreateUserRow struct {
-	ID        pgtype.UUID
-	Name      string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Name,
+		arg.Email,
 		arg.Password,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var i CreateUserRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.AvatarID,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -52,30 +51,26 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, created_at, updated_at
-FROM users
+SELECT id, name, email, password, avatar_id, role, created_at, updated_at FROM users
 ORDER BY created_at DESC
 `
 
-type ListUsersRow struct {
-	ID        pgtype.UUID
-	Name      string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-}
-
-func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListUsersRow
+	var items []User
 	for rows.Next() {
-		var i ListUsersRow
+		var i User
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Email,
+			&i.Password,
+			&i.AvatarID,
+			&i.Role,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

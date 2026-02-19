@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.30.0
 
-package database
+package db
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,7 +11,10 @@ import (
 type User struct {
 	ID        pgtype.UUID
 	Name      string
+	Email     string
 	Password  string
+	AvatarID  pgtype.UUID
+	Role      string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
