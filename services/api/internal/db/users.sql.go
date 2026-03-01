@@ -12,9 +12,15 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-
-INSERT INTO users(id, name, email, password, created_at, updated_at)
-VALUES($1,$2,$3,$4,$5,$6)
+INSERT INTO users (id, name, email, password, created_at, updated_at)
+VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6
+)
 RETURNING id, name, email, password, avatar_id, role, created_at, updated_at
 `
 
@@ -50,36 +56,24 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const listUsers = `-- name: ListUsers :many
+const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, password, avatar_id, role, created_at, updated_at FROM users
-ORDER BY created_at DESC
+WHERE email = $1
+LIMIT 1
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Email,
-			&i.Password,
-			&i.AvatarID,
-			&i.Role,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.AvatarID,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
