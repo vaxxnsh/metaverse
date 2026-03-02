@@ -16,6 +16,14 @@ type Config struct {
 	ReadTimeout time.Duration
 }
 
+func getEnv(key string, fallback string) string {
+	val, exists := os.LookupEnv(key)
+	if !exists {
+		return fallback
+	}
+	return val
+}
+
 func Load() *Config {
 	godotenv.Load()
 	cfg := &Config{
@@ -31,12 +39,4 @@ func Load() *Config {
 	}
 
 	return cfg
-}
-
-func getEnv(key string, fallback string) string {
-	val, exists := os.LookupEnv(key)
-	if !exists {
-		return fallback
-	}
-	return val
 }

@@ -1,21 +1,59 @@
 package main
 
 import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vaxxnsh/metaverse/api/internal/config"
-	"github.com/vaxxnsh/metaverse/api/internal/repository"
-	"github.com/vaxxnsh/metaverse/api/internal/service"
+	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/metaverse/api/internal/router"
+	"github.com/vaxxnsh/metaverse/api/internal/user"
 )
+
+func NewDB(dbURL string) (*pgxpool.Pool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		return nil, err
+	}
+
+	config.MaxConns = 10
+	config.MinConns = 2
+	config.MaxConnLifetime = time.Hour
+	config.MaxConnIdleTime = 30 * time.Minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := pool.Ping(ctx); err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}
 
 func main() {
 	cfg := config.Load()
 
-	db, queries, _ := db.NewDB(cfg.DBURL)
+	pool, err := NewDB(cfg.DBURL)
+	if err != nil {
+		log.Fatal("error while connecting with database")
+	}
+	queries := db.New(pool)
+	userRepo := user.NewRepository(queries)
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService)
 
-	userRepo := repository.NewUserRepository(queries)
-	userService := service.NewUserService()
-	userHandler := handlers.NewUserHandler(userService)
+	appHandler := router.AppHandlers{
+		UserHandler: *userHandler,
+	}
 
-	router := router.SetupRouter(userHandler)
-
+	router := router.SetupRouter(appHandler)
 	router.Run(cfg.Port)
 }
