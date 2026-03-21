@@ -1,6 +1,6 @@
 -- +goose Up
 
-CREATE TABLE users (
+CREATE TABLE admins (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -12,4 +12,4 @@ CREATE TABLE users (
 
 -- +goose Down
 
-DROP TABLE users;
+DROP TABLE admins;
