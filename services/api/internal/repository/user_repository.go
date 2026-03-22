@@ -9,6 +9,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, name, email, paswordHash string) (*domain.User, error)
+	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -25,6 +26,16 @@ func (u *userRepository) Create(ctx context.Context, name, email, paswordHash st
 		Email:    email,
 		Password: paswordHash,
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return domain.DBUserToDomain(user), nil
+}
+
+func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	user, err := u.queries.FindUserByEmail(ctx, email)
 
 	if err != nil {
 		return nil, err

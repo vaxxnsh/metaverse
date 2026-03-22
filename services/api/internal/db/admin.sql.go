@@ -34,3 +34,24 @@ func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin
 	)
 	return i, err
 }
+
+const findAdminByEmail = `-- name: FindAdminByEmail :one
+SELECT id, name, email, password, created_at, updated_at
+FROM admins
+WHERE email = $1
+LIMIT 1
+`
+
+func (q *Queries) FindAdminByEmail(ctx context.Context, email string) (Admin, error) {
+	row := q.db.QueryRow(ctx, findAdminByEmail, email)
+	var i Admin
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

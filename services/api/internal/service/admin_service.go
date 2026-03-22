@@ -9,6 +9,7 @@ import (
 
 type AdminService interface {
 	Create(ctx context.Context, name, email, password string) (*domain.Admin, error)
+	FindByEmail(ctx context.Context, email string) (*domain.Admin, error)
 }
 
 type adminService struct {
@@ -22,6 +23,15 @@ func NewAdminService(repo repository.AdminRepository) AdminService {
 func (a *adminService) Create(ctx context.Context, name string, email string, password string) (*domain.Admin, error) {
 	admin, err := a.repo.Create(ctx, name, email, password)
 
+	if err != nil {
+		return nil, err
+	}
+
+	return admin, nil
+}
+
+func (a *adminService) FindByEmail(ctx context.Context, email string) (*domain.Admin, error) {
+	admin, err := a.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
