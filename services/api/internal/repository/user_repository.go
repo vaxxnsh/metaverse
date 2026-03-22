@@ -2,39 +2,49 @@ package repository
 
 import (
 	"context"
-	"time"
+	"errors"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/metaverse/api/internal/domain"
 )
 
-type psqlUserRepository struct {
+type UserRepository interface {
+	Create(ctx context.Context, name, email, paswordHash string) (*domain.User, error)
+	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+}
+
+type userRepository struct {
 	queries *db.Queries
 }
 
-func NewUserRepository(queries *db.Queries) *psqlUserRepository {
-	return &psqlUserRepository{
-		queries: queries,
-	}
+func NewUserRepository(q *db.Queries) UserRepository {
+	return &userRepository{queries: q}
 }
 
-func (r *psqlUserRepository) Create(
-	ctx context.Context,
-	id pgtype.UUID,
-	name, email, password string,
-) (db.User, error) {
+func (u *userRepository) Create(ctx context.Context, name, email, paswordHash string) (*domain.User, error) {
+	user, err := u.queries.CreateUser(ctx, db.CreateUserParams{
+		Name:     name,
+		Email:    email,
+		Password: paswordHash,
+	})
 
-	now := pgtype.Timestamp{
-		Time:  time.Now(),
-		Valid: true,
+	if err != nil {
+		return nil, err
 	}
 
-	return r.queries.CreateUser(ctx, db.CreateUserParams{
-		ID:        id,
-		Name:      name,
-		Email:     email,
-		Password:  password,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
+	return domain.DBUserToDomain(user), nil
+}
+
+func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	user, err := u.queries.FindUserByEmail(ctx, email)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return domain.DBUserToDomain(user), nil
 }

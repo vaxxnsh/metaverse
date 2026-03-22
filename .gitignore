@@ -3,3 +3,5 @@
 
 # Go dependencies
 vendor/
+
+bin/
