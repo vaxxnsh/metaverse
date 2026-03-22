@@ -10,7 +10,7 @@ import (
 )
 
 const createAdmin = `-- name: CreateAdmin :one
-INSERT INTO users (name, email, password)
+INSERT INTO admins (name, email, password)
 VALUES ($1, $2, $3)
 RETURNING id, name, email, password, created_at, updated_at
 `
@@ -21,9 +21,9 @@ type CreateAdminParams struct {
 	Password string
 }
 
-func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (User, error) {
+func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin, error) {
 	row := q.db.QueryRow(ctx, createAdmin, arg.Name, arg.Email, arg.Password)
-	var i User
+	var i Admin
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
