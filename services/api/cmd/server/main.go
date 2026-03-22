@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vaxxnsh/metaverse/api/internal/config"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/metaverse/api/internal/handler"
+	"github.com/vaxxnsh/metaverse/api/internal/repository"
 	"github.com/vaxxnsh/metaverse/api/internal/router"
-	"github.com/vaxxnsh/metaverse/api/internal/user"
+	"github.com/vaxxnsh/metaverse/api/internal/service"
 )
 
 func NewDB(dbURL string) (*pgxpool.Pool, error) {
@@ -46,14 +49,22 @@ func main() {
 		log.Fatal("error while connecting with database")
 	}
 	queries := db.New(pool)
-	userRepo := user.NewRepository(queries)
-	userService := user.NewService(userRepo)
-	userHandler := user.NewHandler(userService)
+	userRepo := repository.NewUserRepository(queries)
+	userService := service.NewUserService(userRepo)
+	adminRepo := repository.NewAdminRepository(queries)
+	adminService := service.NewAdminService(adminRepo)
+
+	authService := service.NewAuthService(userService, adminService)
 
 	appHandler := router.AppHandlers{
-		UserHandler: *userHandler,
+		AuthHandler: *handler.NewAuthHandler(authService),
 	}
 
 	router := router.SetupRouter(appHandler)
-	router.Run(cfg.Port)
+
+	fmt.Println("HELLO WORLD")
+
+	fmt.Println(cfg.Port)
+
+	router.Run(fmt.Sprintf(":%s", cfg.Port))
 }

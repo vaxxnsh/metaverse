@@ -2,11 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/vaxxnsh/metaverse/api/internal/user"
+	"github.com/vaxxnsh/metaverse/api/internal/handler"
 )
 
 type AppHandlers struct {
-	UserHandler user.Handler
+	handler.AuthHandler
 }
 
 func SetupRouter(appHandlers AppHandlers) *gin.Engine {
@@ -14,10 +14,12 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		users := api.Group("/users")
+		auth := api.Group("/auth")
 		{
-			users.POST("/signup", appHandlers.UserHandler.Signup)
-			users.POST("/", appHandlers.UserHandler.Login)
+			auth.POST("/user/signup", appHandlers.RegisterUser)
+			auth.POST("/user/login", appHandlers.LoginUser)
+			auth.POST("/admin/signup", appHandlers.RegisterAdmin)
+			auth.POST("/admin/login", appHandlers.LoginAdmin)
 		}
 	}
 

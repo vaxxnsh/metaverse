@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
 	"github.com/vaxxnsh/metaverse/api/internal/domain"
 )
@@ -38,6 +40,9 @@ func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain
 	user, err := u.queries.FindUserByEmail(ctx, email)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
