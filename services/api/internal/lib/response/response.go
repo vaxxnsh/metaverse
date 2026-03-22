@@ -21,7 +21,7 @@ func SendSuccess[T any](c *gin.Context, data T, statusCode int) {
 	})
 }
 
-func SendError(c *gin.Context, statusCode int, code, message string, details interface{}) {
+func SendError(c *gin.Context, statusCode int, code, message string, details any) {
 	c.JSON(statusCode, ErrorResponse{
 		Success: false,
 		Code:    code,
