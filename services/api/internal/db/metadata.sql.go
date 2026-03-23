@@ -30,3 +30,34 @@ func (q *Queries) FindAvatarByID(ctx context.Context, id pgtype.UUID) (Avatar, e
 	)
 	return i, err
 }
+
+const getAvatars = `-- name: GetAvatars :many
+SELECT id, image_url, name, created_at, updated_at
+FROM avatars
+`
+
+func (q *Queries) GetAvatars(ctx context.Context) ([]Avatar, error) {
+	rows, err := q.db.Query(ctx, getAvatars)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Avatar
+	for rows.Next() {
+		var i Avatar
+		if err := rows.Scan(
+			&i.ID,
+			&i.ImageUrl,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

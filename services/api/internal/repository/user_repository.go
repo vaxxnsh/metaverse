@@ -63,18 +63,10 @@ func (u *userRepository) PatchMetadata(ctx context.Context, userId, avatarId str
 		return nil, err
 	}
 
-	_, err := u.queries.FindUserByID(ctx, userUUID)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errors.New("user not found")
-		}
-		return nil, err
-	}
-
 	avatar, err := u.queries.FindAvatarByID(ctx, avatarUUID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errors.New("avatar not found")
+			return nil, domain.ErrAvatarNotFound
 		}
 		return nil, err
 	}
@@ -84,6 +76,9 @@ func (u *userRepository) PatchMetadata(ctx context.Context, userId, avatarId str
 		AvatarID: avatar.ID,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
 		return nil, err
 	}
 

@@ -63,18 +63,10 @@ func (a *adminRepository) PatchMetadata(ctx context.Context, adminId, avatarId s
 		return nil, err
 	}
 
-	_, err := a.queries.FindUserByID(ctx, adminUUID)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errors.New("admin not found")
-		}
-		return nil, err
-	}
-
 	avatar, err := a.queries.FindAvatarByID(ctx, avatarUUID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errors.New("avatar not found")
+			return nil, domain.ErrAvatarNotFound
 		}
 		return nil, err
 	}
@@ -84,6 +76,9 @@ func (a *adminRepository) PatchMetadata(ctx context.Context, adminId, avatarId s
 		AvatarID: avatar.ID,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrAdminNotFound
+		}
 		return nil, err
 	}
 

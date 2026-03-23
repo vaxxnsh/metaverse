@@ -57,7 +57,9 @@ func main() {
 	authService := service.NewAuthService(userService, adminService)
 
 	appHandler := router.AppHandlers{
-		AuthHandler: *handler.NewAuthHandler(authService),
+		AuthHandler:  *handler.NewAuthHandler(authService),
+		UserHandler:  *handler.NewUserHandler(userService),
+		AdminHandler: *handler.NewAdminHandler(adminService),
 	}
 
 	router := router.SetupRouter(appHandler)
