@@ -9,6 +9,12 @@ FROM admins
 WHERE email = $1
 LIMIT 1;
 
+-- name: FindAdminByID :one
+SELECT *
+FROM admins
+WHERE id = $1
+LIMIT 1;
+
 -- name: PatchAdminMetadata :one
 UPDATE admins
 SET avatar_id = $2,
