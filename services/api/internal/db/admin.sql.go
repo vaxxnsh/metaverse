@@ -60,6 +60,28 @@ func (q *Queries) FindAdminByEmail(ctx context.Context, email string) (Admin, er
 	return i, err
 }
 
+const findAdminByID = `-- name: FindAdminByID :one
+SELECT id, name, email, password, created_at, updated_at, avatar_id
+FROM admins
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) FindAdminByID(ctx context.Context, id pgtype.UUID) (Admin, error) {
+	row := q.db.QueryRow(ctx, findAdminByID, id)
+	var i Admin
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AvatarID,
+	)
+	return i, err
+}
+
 const patchAdminMetadata = `-- name: PatchAdminMetadata :one
 UPDATE admins
 SET avatar_id = $2,

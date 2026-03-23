@@ -60,6 +60,28 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 	return i, err
 }
 
+const findUserByID = `-- name: FindUserByID :one
+SELECT id, name, email, password, created_at, updated_at, avatar_id
+FROM users
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, findUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AvatarID,
+	)
+	return i, err
+}
+
 const patchUserMetadata = `-- name: PatchUserMetadata :one
 UPDATE users
 SET avatar_id = $2,
