@@ -7,12 +7,14 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (name, email, password)
 VALUES ($1, $2, $3)
-RETURNING id, name, email, password, created_at, updated_at
+RETURNING id, name, email, password, created_at, updated_at, avatar_id
 `
 
 type CreateUserParams struct {
@@ -31,12 +33,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarID,
 	)
 	return i, err
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, name, email, password, created_at, updated_at
+SELECT id, name, email, password, created_at, updated_at, avatar_id
 FROM users
 WHERE email = $1
 LIMIT 1
@@ -52,6 +55,35 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarID,
+	)
+	return i, err
+}
+
+const patchUserMetadata = `-- name: PatchUserMetadata :one
+UPDATE users
+SET avatar_id = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, email, password, created_at, updated_at, avatar_id
+`
+
+type PatchUserMetadataParams struct {
+	ID       pgtype.UUID
+	AvatarID pgtype.UUID
+}
+
+func (q *Queries) PatchUserMetadata(ctx context.Context, arg PatchUserMetadataParams) (User, error) {
+	row := q.db.QueryRow(ctx, patchUserMetadata, arg.ID, arg.AvatarID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AvatarID,
 	)
 	return i, err
 }

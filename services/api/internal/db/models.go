@@ -15,6 +15,15 @@ type Admin struct {
 	Password  string
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
+	AvatarID  pgtype.UUID
+}
+
+type Avatar struct {
+	ID        pgtype.UUID
+	ImageUrl  string
+	Name      pgtype.Text
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 type User struct {
@@ -24,4 +33,5 @@ type User struct {
 	Password  string
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
+	AvatarID  pgtype.UUID
 }
