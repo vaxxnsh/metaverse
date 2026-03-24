@@ -11,6 +11,7 @@ type User struct {
 	Name      string
 	Email     string
 	Password  string
+	AvatarUrl string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -21,6 +22,7 @@ func DBUserToDomain(user db.User) *User {
 		Name:      user.Name,
 		Email:     user.Email,
 		Password:  user.Password,
+		AvatarUrl: user.AvatarID.String(),
 		CreatedAt: user.CreatedAt.Time,
 		UpdatedAt: user.UpdatedAt.Time,
 	}

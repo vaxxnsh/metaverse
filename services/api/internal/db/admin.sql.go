@@ -7,12 +7,14 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAdmin = `-- name: CreateAdmin :one
 INSERT INTO admins (name, email, password)
 VALUES ($1, $2, $3)
-RETURNING id, name, email, password, created_at, updated_at
+RETURNING id, name, email, password, created_at, updated_at, avatar_id
 `
 
 type CreateAdminParams struct {
@@ -31,12 +33,13 @@ func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarID,
 	)
 	return i, err
 }
 
 const findAdminByEmail = `-- name: FindAdminByEmail :one
-SELECT id, name, email, password, created_at, updated_at
+SELECT id, name, email, password, created_at, updated_at, avatar_id
 FROM admins
 WHERE email = $1
 LIMIT 1
@@ -52,6 +55,57 @@ func (q *Queries) FindAdminByEmail(ctx context.Context, email string) (Admin, er
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarID,
+	)
+	return i, err
+}
+
+const findAdminByID = `-- name: FindAdminByID :one
+SELECT id, name, email, password, created_at, updated_at, avatar_id
+FROM admins
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) FindAdminByID(ctx context.Context, id pgtype.UUID) (Admin, error) {
+	row := q.db.QueryRow(ctx, findAdminByID, id)
+	var i Admin
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AvatarID,
+	)
+	return i, err
+}
+
+const patchAdminMetadata = `-- name: PatchAdminMetadata :one
+UPDATE admins
+SET avatar_id = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, email, password, created_at, updated_at, avatar_id
+`
+
+type PatchAdminMetadataParams struct {
+	ID       pgtype.UUID
+	AvatarID pgtype.UUID
+}
+
+func (q *Queries) PatchAdminMetadata(ctx context.Context, arg PatchAdminMetadataParams) (Admin, error) {
+	row := q.db.QueryRow(ctx, patchAdminMetadata, arg.ID, arg.AvatarID)
+	var i Admin
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AvatarID,
 	)
 	return i, err
 }

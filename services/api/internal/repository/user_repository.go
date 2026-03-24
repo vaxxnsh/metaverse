@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
 	"github.com/vaxxnsh/metaverse/api/internal/domain"
 )
@@ -12,6 +13,8 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, name, email, paswordHash string) (*domain.User, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+	PatchMetadata(ctx context.Context, userId, avatarId string) (*domain.User, error)
+	FindByID(ctx context.Context, userId string) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -47,4 +50,55 @@ func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain
 	}
 
 	return domain.DBUserToDomain(user), nil
+}
+
+func (u *userRepository) FindByID(ctx context.Context, userId string) (*domain.User, error) {
+	userUUID := pgtype.UUID{}
+	if err := userUUID.Scan(userId); err != nil || !userUUID.Valid {
+		return nil, err
+	}
+
+	user, err := u.queries.FindUserByID(ctx, userUUID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return domain.DBUserToDomain(user), nil
+}
+
+func (u *userRepository) PatchMetadata(ctx context.Context, userId, avatarId string) (*domain.User, error) {
+	userUUID := pgtype.UUID{}
+	avatarUUID := pgtype.UUID{}
+
+	if err := userUUID.Scan(userId); err != nil || !userUUID.Valid {
+		return nil, err
+	}
+
+	if err := avatarUUID.Scan(avatarId); err != nil || !avatarUUID.Valid {
+		return nil, err
+	}
+
+	avatar, err := u.queries.FindAvatarByID(ctx, avatarUUID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrAvatarNotFound
+		}
+		return nil, err
+	}
+
+	updatedUser, err := u.queries.PatchUserMetadata(ctx, db.PatchUserMetadataParams{
+		ID:       userUUID,
+		AvatarID: avatar.ID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return domain.DBUserToDomain(updatedUser), nil
 }

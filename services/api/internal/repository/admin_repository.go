@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
 	"github.com/vaxxnsh/metaverse/api/internal/domain"
 )
@@ -12,6 +13,7 @@ import (
 type AdminRepository interface {
 	Create(ctx context.Context, name, email, paswordHash string) (*domain.Admin, error)
 	FindByEmail(ctx context.Context, email string) (*domain.Admin, error)
+	PatchMetadata(ctx context.Context, adminId, avatarId string) (*domain.Admin, error)
 }
 
 type adminRepository struct {
@@ -47,4 +49,38 @@ func (a *adminRepository) FindByEmail(ctx context.Context, email string) (*domai
 	}
 
 	return domain.DBAdminToDomain(admin), nil
+}
+
+func (a *adminRepository) PatchMetadata(ctx context.Context, adminId, avatarId string) (*domain.Admin, error) {
+	adminUUID := pgtype.UUID{}
+	avatarUUID := pgtype.UUID{}
+
+	if err := adminUUID.Scan(adminId); err != nil || !adminUUID.Valid {
+		return nil, err
+	}
+
+	if err := avatarUUID.Scan(avatarId); err != nil || !avatarUUID.Valid {
+		return nil, err
+	}
+
+	avatar, err := a.queries.FindAvatarByID(ctx, avatarUUID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrAvatarNotFound
+		}
+		return nil, err
+	}
+
+	updatedAdmin, err := a.queries.PatchAdminMetadata(ctx, db.PatchAdminMetadataParams{
+		ID:       adminUUID,
+		AvatarID: avatar.ID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrAdminNotFound
+		}
+		return nil, err
+	}
+
+	return domain.DBAdminToDomain(updatedAdmin), nil
 }

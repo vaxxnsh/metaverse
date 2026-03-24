@@ -11,6 +11,7 @@ type Admin struct {
 	Name      string
 	Email     string
 	Password  string
+	AvatarUrl string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -21,6 +22,7 @@ func DBAdminToDomain(user db.Admin) *Admin {
 		Name:      user.Name,
 		Email:     user.Email,
 		Password:  user.Password,
+		AvatarUrl: user.AvatarID.String(),
 		CreatedAt: user.CreatedAt.Time,
 		UpdatedAt: user.UpdatedAt.Time,
 	}
