@@ -11,6 +11,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bulkCreateSpaceElements = `-- name: BulkCreateSpaceElements :exec
+INSERT INTO space_elements (space_id, element_id, x, y)
+SELECT $1::uuid, unnest($2::uuid[]), unnest($3::int4[]), unnest($4::int4[])
+`
+
+type BulkCreateSpaceElementsParams struct {
+	SpaceID    pgtype.UUID
+	ElementIds []pgtype.UUID
+	Xs         []int32
+	Ys         []int32
+}
+
+func (q *Queries) BulkCreateSpaceElements(ctx context.Context, arg BulkCreateSpaceElementsParams) error {
+	_, err := q.db.Exec(ctx, bulkCreateSpaceElements,
+		arg.SpaceID,
+		arg.ElementIds,
+		arg.Xs,
+		arg.Ys,
+	)
+	return err
+}
+
 const createSpace = `-- name: CreateSpace :one
 INSERT INTO spaces (name, width, height, thumbnail)
 VALUES ($1, $2, $3, $4)
@@ -42,4 +64,63 @@ func (q *Queries) CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const createSpaceElement = `-- name: CreateSpaceElement :one
+INSERT INTO space_elements (space_id, element_id, x, y)
+VALUES ($1, $2, $3, $4)
+RETURNING space_id, element_id, x, y
+`
+
+type CreateSpaceElementParams struct {
+	SpaceID   pgtype.UUID
+	ElementID pgtype.UUID
+	X         int32
+	Y         int32
+}
+
+func (q *Queries) CreateSpaceElement(ctx context.Context, arg CreateSpaceElementParams) (SpaceElement, error) {
+	row := q.db.QueryRow(ctx, createSpaceElement,
+		arg.SpaceID,
+		arg.ElementID,
+		arg.X,
+		arg.Y,
+	)
+	var i SpaceElement
+	err := row.Scan(
+		&i.SpaceID,
+		&i.ElementID,
+		&i.X,
+		&i.Y,
+	)
+	return i, err
+}
+
+const getMapElementsByMapID = `-- name: GetMapElementsByMapID :many
+SELECT map_id, element_id, x, y FROM map_elements WHERE map_id = $1
+`
+
+func (q *Queries) GetMapElementsByMapID(ctx context.Context, mapID pgtype.UUID) ([]MapElement, error) {
+	rows, err := q.db.Query(ctx, getMapElementsByMapID, mapID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MapElement
+	for rows.Next() {
+		var i MapElement
+		if err := rows.Scan(
+			&i.MapID,
+			&i.ElementID,
+			&i.X,
+			&i.Y,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -45,12 +45,10 @@ type Map struct {
 }
 
 type MapElement struct {
-	ID        pgtype.UUID
 	MapID     pgtype.UUID
 	ElementID pgtype.UUID
-	X         pgtype.Int4
-	Y         pgtype.Int4
-	CreatedAt pgtype.Timestamp
+	X         int32
+	Y         int32
 }
 
 type Space struct {
@@ -64,12 +62,10 @@ type Space struct {
 }
 
 type SpaceElement struct {
-	ID        pgtype.UUID
 	SpaceID   pgtype.UUID
 	ElementID pgtype.UUID
 	X         int32
 	Y         int32
-	CreatedAt pgtype.Timestamp
 }
 
 type User struct {
