@@ -11,6 +11,7 @@ import (
 
 type SpaceRepository interface {
 	CreateSpace(ctx context.Context, name string, width, height int32, mapId string) (*domain.Space, error)
+	DeleteSpace(ctx context.Context, spaceId string) error
 }
 
 type spaceRepository struct {
@@ -81,4 +82,13 @@ func (s *spaceRepository) CreateSpace(ctx context.Context, name string, width, h
 	}
 
 	return domain.DBSpaceToDomain(space), nil
+}
+
+func (s *spaceRepository) DeleteSpace(ctx context.Context, spaceId string) error {
+	spaceUUID := pgtype.UUID{}
+	if err := spaceUUID.Scan(spaceId); err != nil || !spaceUUID.Valid {
+		return domain.ErrInvalidSpaceID
+	}
+
+	return s.queries.DeleteSpace(ctx, spaceUUID)
 }

@@ -14,3 +14,6 @@ RETURNING *;
 -- name: BulkCreateSpaceElements :exec
 INSERT INTO space_elements (space_id, element_id, x, y)
 SELECT sqlc.arg(space_id)::uuid, unnest(sqlc.arg(element_ids)::uuid[]), unnest(sqlc.arg(xs)::int4[]), unnest(sqlc.arg(ys)::int4[]);
+
+-- name: DeleteSpace :exec
+DELETE FROM spaces WHERE id = $1;

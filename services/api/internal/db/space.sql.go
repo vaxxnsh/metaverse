@@ -96,6 +96,15 @@ func (q *Queries) CreateSpaceElement(ctx context.Context, arg CreateSpaceElement
 	return i, err
 }
 
+const deleteSpace = `-- name: DeleteSpace :exec
+DELETE FROM spaces WHERE id = $1
+`
+
+func (q *Queries) DeleteSpace(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSpace, id)
+	return err
+}
+
 const getMapElementsByMapID = `-- name: GetMapElementsByMapID :many
 SELECT map_id, element_id, x, y FROM map_elements WHERE map_id = $1
 `
