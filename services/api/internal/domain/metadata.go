@@ -26,3 +26,21 @@ func MapAvatarsToDomain(avatars []db.Avatar) []Avatar {
 
 	return domainAvatars
 }
+
+type UserAvatar struct {
+	UserID   string
+	ImageUrl string
+	Name     string
+}
+
+func MapBulkUserAvatarsToDomain(rows []db.GetBulkUserAvatarsRow) []UserAvatar {
+	result := make([]UserAvatar, 0, len(rows))
+	for _, r := range rows {
+		result = append(result, UserAvatar{
+			UserID:   r.UserID.String(),
+			ImageUrl: r.ImageUrl,
+			Name:     r.AvatarName.String,
+		})
+	}
+	return result
+}

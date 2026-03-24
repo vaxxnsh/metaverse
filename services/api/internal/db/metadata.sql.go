@@ -61,3 +61,36 @@ func (q *Queries) GetAvatars(ctx context.Context) ([]Avatar, error) {
 	}
 	return items, nil
 }
+
+const getBulkUserAvatars = `-- name: GetBulkUserAvatars :many
+SELECT u.id AS user_id, a.image_url, a.name AS avatar_name
+FROM users u
+JOIN avatars a ON u.avatar_id = a.id
+WHERE u.id = ANY($1::uuid[])
+`
+
+type GetBulkUserAvatarsRow struct {
+	UserID     pgtype.UUID
+	ImageUrl   string
+	AvatarName pgtype.Text
+}
+
+func (q *Queries) GetBulkUserAvatars(ctx context.Context, dollar_1 []pgtype.UUID) ([]GetBulkUserAvatarsRow, error) {
+	rows, err := q.db.Query(ctx, getBulkUserAvatars, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBulkUserAvatarsRow
+	for rows.Next() {
+		var i GetBulkUserAvatarsRow
+		if err := rows.Scan(&i.UserID, &i.ImageUrl, &i.AvatarName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

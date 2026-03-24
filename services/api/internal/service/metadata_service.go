@@ -9,6 +9,7 @@ import (
 
 type MetaDataService interface {
 	GetAvatars(ctx context.Context, userId string) ([]domain.Avatar, error)
+	GetBulkUserAvatars(ctx context.Context, userIds []string) ([]domain.UserAvatar, error)
 }
 
 type metadataService struct {
@@ -33,4 +34,8 @@ func (m *metadataService) GetAvatars(ctx context.Context, userId string) ([]doma
 	}
 
 	return m.repo.GetAvatars(ctx)
+}
+
+func (m *metadataService) GetBulkUserAvatars(ctx context.Context, userIds []string) ([]domain.UserAvatar, error) {
+	return m.repo.GetBulkUserAvatars(ctx, userIds)
 }

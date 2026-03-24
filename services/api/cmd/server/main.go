@@ -56,14 +56,13 @@ func main() {
 	metadataRepo := repository.NewMetadataRepository(queries)
 	metadataService := service.NewMetadataService(metadataRepo, userService)
 
-	_ = metadataService // wire into handler when metadata handler is created
-
 	authService := service.NewAuthService(userService, adminService)
 
 	appHandler := router.AppHandlers{
-		AuthHandler:  *handler.NewAuthHandler(authService),
-		UserHandler:  *handler.NewUserHandler(userService),
-		AdminHandler: *handler.NewAdminHandler(adminService),
+		AuthHandler:     *handler.NewAuthHandler(authService),
+		UserHandler:     *handler.NewUserHandler(userService),
+		AdminHandler:    *handler.NewAdminHandler(adminService),
+		MetadataHandler: *handler.NewMetadataHandler(metadataService),
 	}
 
 	router := router.SetupRouter(appHandler)

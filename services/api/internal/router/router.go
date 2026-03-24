@@ -10,6 +10,7 @@ type AppHandlers struct {
 	handler.AuthHandler
 	handler.UserHandler
 	handler.AdminHandler
+	handler.MetadataHandler
 }
 
 func SetupRouter(appHandlers AppHandlers) *gin.Engine {
@@ -29,6 +30,7 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 
 			v1.PATCH("/user/metadata", middleware.AuthUser(), appHandlers.UserHandler.PatchMetadata)
 			v1.PATCH("/admin/metadata", middleware.AuthAdmin(), appHandlers.AdminHandler.PatchMetadata)
+			v1.GET("/user/metadata/bulk", middleware.AuthUser(), appHandlers.MetadataHandler.GetBulkUserAvatars)
 		}
 	}
 
