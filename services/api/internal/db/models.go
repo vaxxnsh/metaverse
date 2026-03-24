@@ -26,6 +26,49 @@ type Avatar struct {
 	UpdatedAt pgtype.Timestamptz
 }
 
+type Element struct {
+	ID        pgtype.UUID
+	Width     int32
+	Height    int32
+	ImageUrl  string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type Map struct {
+	ID        pgtype.UUID
+	Name      string
+	Width     int32
+	Height    int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type MapElement struct {
+	MapID     pgtype.UUID
+	ElementID pgtype.UUID
+	X         int32
+	Y         int32
+}
+
+type Space struct {
+	ID        pgtype.UUID
+	CreatorID pgtype.UUID
+	Name      string
+	Width     int32
+	Height    int32
+	Thumbnail pgtype.Text
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type SpaceElement struct {
+	SpaceID   pgtype.UUID
+	ElementID pgtype.UUID
+	X         int32
+	Y         int32
+}
+
 type User struct {
 	ID        pgtype.UUID
 	Name      string

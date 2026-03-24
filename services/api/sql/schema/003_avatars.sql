@@ -17,5 +17,6 @@ ALTER TABLE admins
 -- +goose Down
 
 ALTER TABLE users DROP COLUMN avatar_id;
+ALTER TABLE admins DROP COLUMN avatar_id;
 
 DROP TABLE avatars;
