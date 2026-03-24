@@ -53,6 +53,10 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	adminRepo := repository.NewAdminRepository(queries)
 	adminService := service.NewAdminService(adminRepo)
+	metadataRepo := repository.NewMetadataRepository(queries)
+	metadataService := service.NewMetadataService(metadataRepo, userService)
+
+	_ = metadataService // wire into handler when metadata handler is created
 
 	authService := service.NewAuthService(userService, adminService)
 
@@ -63,10 +67,5 @@ func main() {
 	}
 
 	router := router.SetupRouter(appHandler)
-
-	fmt.Println("HELLO WORLD")
-
-	fmt.Println(cfg.Port)
-
 	router.Run(fmt.Sprintf(":%s", cfg.Port))
 }

@@ -12,10 +12,10 @@ type MetadataRepository interface {
 }
 
 type metadataRepository struct {
-	queries db.Queries
+	queries *db.Queries
 }
 
-func NewMetadataRepository(q db.Queries) MetadataRepository {
+func NewMetadataRepository(q *db.Queries) MetadataRepository {
 	return &metadataRepository{
 		queries: q,
 	}

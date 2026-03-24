@@ -14,6 +14,7 @@ type UserRepository interface {
 	Create(ctx context.Context, name, email, paswordHash string) (*domain.User, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	PatchMetadata(ctx context.Context, userId, avatarId string) (*domain.User, error)
+	FindByID(ctx context.Context, userId string) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -41,6 +42,23 @@ func (u *userRepository) Create(ctx context.Context, name, email, paswordHash st
 func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	user, err := u.queries.FindUserByEmail(ctx, email)
 
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return domain.DBUserToDomain(user), nil
+}
+
+func (u *userRepository) FindByID(ctx context.Context, userId string) (*domain.User, error) {
+	userUUID := pgtype.UUID{}
+	if err := userUUID.Scan(userId); err != nil || !userUUID.Valid {
+		return nil, err
+	}
+
+	user, err := u.queries.FindUserByID(ctx, userUUID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
