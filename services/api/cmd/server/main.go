@@ -55,6 +55,8 @@ func main() {
 	adminService := service.NewAdminService(adminRepo)
 	metadataRepo := repository.NewMetadataRepository(queries)
 	metadataService := service.NewMetadataService(metadataRepo, userService)
+	spaceRepo := repository.NewSpaceRepository(pool, queries)
+	spaceService := service.NewSpaceService(spaceRepo)
 
 	authService := service.NewAuthService(userService, adminService)
 
@@ -63,6 +65,7 @@ func main() {
 		UserHandler:     *handler.NewUserHandler(userService),
 		AdminHandler:    *handler.NewAdminHandler(adminService),
 		MetadataHandler: *handler.NewMetadataHandler(metadataService),
+		SpaceHandler:    *handler.NewSpaceHandler(spaceService),
 	}
 
 	router := router.SetupRouter(appHandler)
