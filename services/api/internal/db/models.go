@@ -31,6 +31,7 @@ type Element struct {
 	Width     int32
 	Height    int32
 	ImageUrl  string
+	Static    bool
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }

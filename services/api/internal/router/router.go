@@ -12,6 +12,7 @@ type AppHandlers struct {
 	handler.AdminHandler
 	handler.MetadataHandler
 	handler.SpaceHandler
+	handler.ArenaHandler
 }
 
 func SetupRouter(appHandlers AppHandlers) *gin.Engine {
@@ -36,6 +37,7 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 			v1.POST("/space", middleware.AuthUser(), appHandlers.SpaceHandler.CreateSpace)
 			v1.DELETE("/space/:spaceId", middleware.AuthUser(), appHandlers.SpaceHandler.DeleteSpace)
 			v1.GET("/space/all", middleware.AuthUser(), appHandlers.SpaceHandler.GetMySpaces)
+			v1.GET("/space/:spaceId", middleware.AuthUser(), appHandlers.ArenaHandler.GetSpace)
 		}
 	}
 
