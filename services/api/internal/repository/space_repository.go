@@ -10,8 +10,9 @@ import (
 )
 
 type SpaceRepository interface {
-	CreateSpace(ctx context.Context, name string, width, height int32, mapId string) (*domain.Space, error)
+	CreateSpace(ctx context.Context, creatorId, name string, width, height int32, mapId string) (*domain.Space, error)
 	DeleteSpace(ctx context.Context, spaceId string) error
+	GetSpacesByCreator(ctx context.Context, creatorId string) ([]domain.SpaceSummary, error)
 }
 
 type spaceRepository struct {
@@ -23,7 +24,12 @@ func NewSpaceRepository(pool *pgxpool.Pool, q *db.Queries) SpaceRepository {
 	return &spaceRepository{pool: pool, queries: q}
 }
 
-func (s *spaceRepository) CreateSpace(ctx context.Context, name string, width, height int32, mapId string) (*domain.Space, error) {
+func (s *spaceRepository) CreateSpace(ctx context.Context, creatorId, name string, width, height int32, mapId string) (*domain.Space, error) {
+	creatorUUID := pgtype.UUID{}
+	if err := creatorUUID.Scan(creatorId); err != nil || !creatorUUID.Valid {
+		return nil, domain.ErrUserNotFound
+	}
+
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -33,9 +39,10 @@ func (s *spaceRepository) CreateSpace(ctx context.Context, name string, width, h
 	qtx := s.queries.WithTx(tx)
 
 	space, err := qtx.CreateSpace(ctx, db.CreateSpaceParams{
-		Name:   name,
-		Width:  width,
-		Height: height,
+		CreatorID: creatorUUID,
+		Name:      name,
+		Width:     width,
+		Height:    height,
 	})
 	if err != nil {
 		return nil, err
@@ -91,4 +98,18 @@ func (s *spaceRepository) DeleteSpace(ctx context.Context, spaceId string) error
 	}
 
 	return s.queries.DeleteSpace(ctx, spaceUUID)
+}
+
+func (s *spaceRepository) GetSpacesByCreator(ctx context.Context, creatorId string) ([]domain.SpaceSummary, error) {
+	creatorUUID := pgtype.UUID{}
+	if err := creatorUUID.Scan(creatorId); err != nil || !creatorUUID.Valid {
+		return nil, domain.ErrUserNotFound
+	}
+
+	rows, err := s.queries.GetSpacesByCreator(ctx, creatorUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return domain.MapSpacesToSummary(rows), nil
 }

@@ -34,6 +34,8 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 			v1.GET("/user/metadata/bulk", middleware.AuthUser(), appHandlers.MetadataHandler.GetBulkUserAvatars)
 
 			v1.POST("/space", middleware.AuthUser(), appHandlers.SpaceHandler.CreateSpace)
+			v1.DELETE("/space/:spaceId", middleware.AuthUser(), appHandlers.SpaceHandler.DeleteSpace)
+			v1.GET("/space/all", middleware.AuthUser(), appHandlers.SpaceHandler.GetMySpaces)
 		}
 	}
 

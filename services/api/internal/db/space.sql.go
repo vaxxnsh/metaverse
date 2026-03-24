@@ -34,12 +34,13 @@ func (q *Queries) BulkCreateSpaceElements(ctx context.Context, arg BulkCreateSpa
 }
 
 const createSpace = `-- name: CreateSpace :one
-INSERT INTO spaces (name, width, height, thumbnail)
-VALUES ($1, $2, $3, $4)
-RETURNING id, name, width, height, thumbnail, created_at, updated_at
+INSERT INTO spaces (creator_id, name, width, height, thumbnail)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, creator_id, name, width, height, thumbnail, created_at, updated_at
 `
 
 type CreateSpaceParams struct {
+	CreatorID pgtype.UUID
 	Name      string
 	Width     int32
 	Height    int32
@@ -48,6 +49,7 @@ type CreateSpaceParams struct {
 
 func (q *Queries) CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space, error) {
 	row := q.db.QueryRow(ctx, createSpace,
+		arg.CreatorID,
 		arg.Name,
 		arg.Width,
 		arg.Height,
@@ -56,6 +58,7 @@ func (q *Queries) CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space
 	var i Space
 	err := row.Scan(
 		&i.ID,
+		&i.CreatorID,
 		&i.Name,
 		&i.Width,
 		&i.Height,
@@ -123,6 +126,44 @@ func (q *Queries) GetMapElementsByMapID(ctx context.Context, mapID pgtype.UUID) 
 			&i.ElementID,
 			&i.X,
 			&i.Y,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSpacesByCreator = `-- name: GetSpacesByCreator :many
+SELECT id, name, width, height, thumbnail FROM spaces WHERE creator_id = $1
+`
+
+type GetSpacesByCreatorRow struct {
+	ID        pgtype.UUID
+	Name      string
+	Width     int32
+	Height    int32
+	Thumbnail pgtype.Text
+}
+
+func (q *Queries) GetSpacesByCreator(ctx context.Context, creatorID pgtype.UUID) ([]GetSpacesByCreatorRow, error) {
+	rows, err := q.db.Query(ctx, getSpacesByCreator, creatorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSpacesByCreatorRow
+	for rows.Next() {
+		var i GetSpacesByCreatorRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Width,
+			&i.Height,
+			&i.Thumbnail,
 		); err != nil {
 			return nil, err
 		}

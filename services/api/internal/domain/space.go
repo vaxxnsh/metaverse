@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/vaxxnsh/metaverse/api/internal/db"
@@ -8,12 +9,20 @@ import (
 
 type Space struct {
 	ID        string
+	CreatorID string
 	Name      string
 	Width     int32
 	Height    int32
 	Thumbnail string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type SpaceSummary struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Dimensions string `json:"dimensions"`
+	Thumbnail  string `json:"thumbnail"`
 }
 
 type Element struct {
@@ -51,6 +60,7 @@ type MapElement struct {
 func DBSpaceToDomain(s db.Space) *Space {
 	return &Space{
 		ID:        s.ID.String(),
+		CreatorID: s.CreatorID.String(),
 		Name:      s.Name,
 		Width:     s.Width,
 		Height:    s.Height,
@@ -58,6 +68,23 @@ func DBSpaceToDomain(s db.Space) *Space {
 		CreatedAt: s.CreatedAt.Time,
 		UpdatedAt: s.UpdatedAt.Time,
 	}
+}
+
+func DBSpaceToSummary(s db.GetSpacesByCreatorRow) SpaceSummary {
+	return SpaceSummary{
+		ID:         s.ID.String(),
+		Name:       s.Name,
+		Dimensions: fmt.Sprintf("%dx%d", s.Width, s.Height),
+		Thumbnail:  s.Thumbnail.String,
+	}
+}
+
+func MapSpacesToSummary(spaces []db.GetSpacesByCreatorRow) []SpaceSummary {
+	result := make([]SpaceSummary, 0, len(spaces))
+	for _, s := range spaces {
+		result = append(result, DBSpaceToSummary(s))
+	}
+	return result
 }
 
 func DBElementToDomain(e db.Element) *Element {

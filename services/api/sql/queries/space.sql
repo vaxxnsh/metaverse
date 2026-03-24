@@ -1,6 +1,6 @@
 -- name: CreateSpace :one
-INSERT INTO spaces (name, width, height, thumbnail)
-VALUES ($1, $2, $3, $4)
+INSERT INTO spaces (creator_id, name, width, height, thumbnail)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetMapElementsByMapID :many
@@ -17,3 +17,6 @@ SELECT sqlc.arg(space_id)::uuid, unnest(sqlc.arg(element_ids)::uuid[]), unnest(s
 
 -- name: DeleteSpace :exec
 DELETE FROM spaces WHERE id = $1;
+
+-- name: GetSpacesByCreator :many
+SELECT id, name, width, height, thumbnail FROM spaces WHERE creator_id = $1;

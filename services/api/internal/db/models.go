@@ -53,6 +53,7 @@ type MapElement struct {
 
 type Space struct {
 	ID        pgtype.UUID
+	CreatorID pgtype.UUID
 	Name      string
 	Width     int32
 	Height    int32
