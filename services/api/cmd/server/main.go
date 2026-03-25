@@ -59,6 +59,8 @@ func main() {
 	spaceService := service.NewSpaceService(spaceRepo)
 	arenaRepo := repository.NewArenaRepository(queries)
 	arenaService := service.NewArenaService(arenaRepo)
+	mapCreatorRepo := repository.NewMapCreatorRepository(queries)
+	mapCreatorService := service.NewMapCreatorService(mapCreatorRepo)
 
 	authService := service.NewAuthService(userService, adminService)
 
@@ -68,7 +70,8 @@ func main() {
 		AdminHandler:    *handler.NewAdminHandler(adminService),
 		MetadataHandler: *handler.NewMetadataHandler(metadataService),
 		SpaceHandler:    *handler.NewSpaceHandler(spaceService),
-		ArenaHandler:    *handler.NewArenaHandler(arenaService),
+		ArenaHandler:       *handler.NewArenaHandler(arenaService),
+		MapCreatorHandler:  *handler.NewMapCreatorHandler(mapCreatorService),
 	}
 
 	router := router.SetupRouter(appHandler)

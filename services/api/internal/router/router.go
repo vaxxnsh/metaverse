@@ -13,6 +13,7 @@ type AppHandlers struct {
 	handler.MetadataHandler
 	handler.SpaceHandler
 	handler.ArenaHandler
+	handler.MapCreatorHandler
 }
 
 func SetupRouter(appHandlers AppHandlers) *gin.Engine {
@@ -39,6 +40,11 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 			v1.GET("/space/all", middleware.AuthUser(), appHandlers.SpaceHandler.GetMySpaces)
 			v1.GET("/space/:spaceId", middleware.AuthUser(), appHandlers.ArenaHandler.GetSpace)
 			v1.GET("/elements", middleware.AuthUser(), appHandlers.ArenaHandler.GetAllElements)
+
+			admin := v1.Group("/admin")
+			{
+				admin.POST("/element", middleware.AuthAdmin(), appHandlers.MapCreatorHandler.CreateElement)
+			}
 			v1.POST("/space/element", middleware.AuthUser(), appHandlers.ArenaHandler.AddElementToSpace)
 			v1.DELETE("/space/element", middleware.AuthUser(), appHandlers.ArenaHandler.DeleteSpaceElement)
 		}
