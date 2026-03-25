@@ -11,6 +11,7 @@ import (
 type ArenaRepository interface {
 	GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error)
 	AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error)
+	DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error
 }
 
 type arenaRepository struct {
@@ -39,6 +40,19 @@ func (r *arenaRepository) GetSpaceWithElements(ctx context.Context, spaceId stri
 
 	result := domain.DBSpaceElementsToArena(space, elements)
 	return &result, nil
+}
+
+func (r *arenaRepository) DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error {
+	spaceUUID := pgtype.UUID{}
+	if err := spaceUUID.Scan(spaceId); err != nil || !spaceUUID.Valid {
+		return domain.ErrInvalidSpaceID
+	}
+
+	return r.queries.DeleteSpaceElement(ctx, db.DeleteSpaceElementParams{
+		SpaceID: spaceUUID,
+		X:       x,
+		Y:       y,
+	})
 }
 
 func (r *arenaRepository) AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error) {

@@ -45,6 +45,32 @@ func (h *ArenaHandler) AddElementToSpace(c *gin.Context) {
 	response.SendSuccess(c, gin.H{"id": se.ElementID}, http.StatusCreated)
 }
 
+type deleteSpaceElementRequest struct {
+	SpaceId string `json:"spaceId" binding:"required"`
+	X       int32  `json:"x"`
+	Y       int32  `json:"y"`
+}
+
+func (h *ArenaHandler) DeleteSpaceElement(c *gin.Context) {
+	var req deleteSpaceElementRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", "INVALID_PAYLOAD", struct{}{})
+		return
+	}
+
+	if err := h.arenaService.DeleteSpaceElement(c.Request.Context(), req.SpaceId, req.X, req.Y); err != nil {
+		switch err {
+		case domain.ErrInvalidSpaceID:
+			response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", err.Error(), struct{}{})
+		default:
+			response.SendError(c, http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", err.Error(), struct{}{})
+		}
+		return
+	}
+
+	response.SendSuccess(c, gin.H{}, http.StatusOK)
+}
+
 func (h *ArenaHandler) GetSpace(c *gin.Context) {
 	spaceId := c.Param("spaceId")
 

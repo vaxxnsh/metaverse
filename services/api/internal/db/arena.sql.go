@@ -11,6 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSpaceElement = `-- name: DeleteSpaceElement :exec
+DELETE FROM space_elements WHERE space_id = $1 AND x = $2 AND y = $3
+`
+
+type DeleteSpaceElementParams struct {
+	SpaceID pgtype.UUID
+	X       int32
+	Y       int32
+}
+
+func (q *Queries) DeleteSpaceElement(ctx context.Context, arg DeleteSpaceElementParams) error {
+	_, err := q.db.Exec(ctx, deleteSpaceElement, arg.SpaceID, arg.X, arg.Y)
+	return err
+}
+
 const getSpaceByID = `-- name: GetSpaceByID :one
 SELECT id, width, height FROM spaces WHERE id = $1
 `

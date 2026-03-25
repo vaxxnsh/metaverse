@@ -1,6 +1,9 @@
 -- name: GetSpaceByID :one
 SELECT id, width, height FROM spaces WHERE id = $1;
 
+-- name: DeleteSpaceElement :exec
+DELETE FROM space_elements WHERE space_id = $1 AND x = $2 AND y = $3;
+
 -- name: GetSpaceElements :many
 SELECT
     se.x,
