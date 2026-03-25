@@ -44,6 +44,15 @@ func (s *Server) readLoop(ws *websocket.Conn) {
 
 func main() {
 	server := NewServer()
-	http.Handle("/ws", websocket.Handler(server.handleWS))
+
+	wsHandler := websocket.Server{
+		Handler: websocket.Handler(server.handleWS),
+		//TODO: skiping origin check for postman now will check later
+		Handshake: func(config *websocket.Config, r *http.Request) error {
+			return nil
+		},
+	}
+
+	http.Handle("/ws", wsHandler)
 	http.ListenAndServe(":3000", nil)
 }
