@@ -59,7 +59,7 @@ func main() {
 	spaceService := service.NewSpaceService(spaceRepo)
 	arenaRepo := repository.NewArenaRepository(queries)
 	arenaService := service.NewArenaService(arenaRepo)
-	mapCreatorRepo := repository.NewMapCreatorRepository(queries)
+	mapCreatorRepo := repository.NewMapCreatorRepository(pool, queries)
 	mapCreatorService := service.NewMapCreatorService(mapCreatorRepo)
 
 	authService := service.NewAuthService(userService, adminService)

@@ -11,6 +11,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bulkCreateMapElements = `-- name: BulkCreateMapElements :exec
+INSERT INTO map_elements (map_id, element_id, x, y)
+SELECT $1::uuid, unnest($2::uuid[]), unnest($3::int4[]), unnest($4::int4[])
+`
+
+type BulkCreateMapElementsParams struct {
+	MapID      pgtype.UUID
+	ElementIds []pgtype.UUID
+	Xs         []int32
+	Ys         []int32
+}
+
+func (q *Queries) BulkCreateMapElements(ctx context.Context, arg BulkCreateMapElementsParams) error {
+	_, err := q.db.Exec(ctx, bulkCreateMapElements,
+		arg.MapID,
+		arg.ElementIds,
+		arg.Xs,
+		arg.Ys,
+	)
+	return err
+}
+
 const createAvatar = `-- name: CreateAvatar :one
 INSERT INTO avatars (image_url, name)
 VALUES ($1, $2)
@@ -62,6 +84,32 @@ func (q *Queries) CreateElement(ctx context.Context, arg CreateElementParams) (E
 		&i.Height,
 		&i.ImageUrl,
 		&i.Static,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createMap = `-- name: CreateMap :one
+INSERT INTO maps (name, width, height)
+VALUES ($1, $2, $3)
+RETURNING id, name, width, height, created_at, updated_at
+`
+
+type CreateMapParams struct {
+	Name   string
+	Width  int32
+	Height int32
+}
+
+func (q *Queries) CreateMap(ctx context.Context, arg CreateMapParams) (Map, error) {
+	row := q.db.QueryRow(ctx, createMap, arg.Name, arg.Width, arg.Height)
+	var i Map
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Width,
+		&i.Height,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

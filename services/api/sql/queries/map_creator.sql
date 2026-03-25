@@ -12,3 +12,12 @@ RETURNING *;
 INSERT INTO avatars (image_url, name)
 VALUES ($1, $2)
 RETURNING *;
+
+-- name: CreateMap :one
+INSERT INTO maps (name, width, height)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: BulkCreateMapElements :exec
+INSERT INTO map_elements (map_id, element_id, x, y)
+SELECT sqlc.arg(map_id)::uuid, unnest(sqlc.arg(element_ids)::uuid[]), unnest(sqlc.arg(xs)::int4[]), unnest(sqlc.arg(ys)::int4[]);
