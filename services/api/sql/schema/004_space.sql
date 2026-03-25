@@ -5,6 +5,7 @@ CREATE TABLE elements (
     width      INTEGER NOT NULL,
     height     INTEGER NOT NULL,
     image_url  TEXT NOT NULL,
+    static     BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

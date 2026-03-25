@@ -57,6 +57,67 @@ type MapElement struct {
 	Y         int32
 }
 
+type SpaceElementDetail struct {
+	ID      string         `json:"id"`
+	Element ElementDetails `json:"element"`
+	X       int32          `json:"x"`
+	Y       int32          `json:"y"`
+}
+
+type ElementDetails struct {
+	ID       string `json:"id"`
+	ImageUrl string `json:"imageUrl"`
+	Static   bool   `json:"static"`
+	Height   int32  `json:"height"`
+	Width    int32  `json:"width"`
+}
+
+type SpaceWithElements struct {
+	Dimensions string               `json:"dimensions"`
+	Elements   []SpaceElementDetail `json:"elements"`
+}
+
+func DBElementRowToDomain(e db.GetAllElementsRow) ElementDetails {
+	return ElementDetails{
+		ID:       e.ID.String(),
+		ImageUrl: e.ImageUrl,
+		Width:    e.Width,
+		Height:   e.Height,
+		Static:   e.Static,
+	}
+}
+
+func MapAllElementsToDomain(rows []db.GetAllElementsRow) []ElementDetails {
+	result := make([]ElementDetails, 0, len(rows))
+	for _, e := range rows {
+		result = append(result, DBElementRowToDomain(e))
+	}
+	return result
+}
+
+func DBSpaceElementsToArena(space db.GetSpaceByIDRow, rows []db.GetSpaceElementsRow) SpaceWithElements {
+	elements := make([]SpaceElementDetail, 0, len(rows))
+	for _, r := range rows {
+		elements = append(elements, SpaceElementDetail{
+			ID: r.ElementID.String(),
+			Element: ElementDetails{
+				ID:       r.ElementID.String(),
+				ImageUrl: r.ImageUrl,
+				Static:   r.Static,
+				Height:   r.ElementHeight,
+				Width:    r.ElementWidth,
+			},
+			X: r.X,
+			Y: r.Y,
+		})
+	}
+
+	return SpaceWithElements{
+		Dimensions: fmt.Sprintf("%dx%d", space.Width, space.Height),
+		Elements:   elements,
+	}
+}
+
 func DBSpaceToDomain(s db.Space) *Space {
 	return &Space{
 		ID:        s.ID.String(),
