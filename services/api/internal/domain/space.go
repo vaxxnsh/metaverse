@@ -77,6 +77,24 @@ type SpaceWithElements struct {
 	Elements   []SpaceElementDetail `json:"elements"`
 }
 
+func DBElementRowToDomain(e db.GetAllElementsRow) ElementDetails {
+	return ElementDetails{
+		ID:       e.ID.String(),
+		ImageUrl: e.ImageUrl,
+		Width:    e.Width,
+		Height:   e.Height,
+		Static:   e.Static,
+	}
+}
+
+func MapAllElementsToDomain(rows []db.GetAllElementsRow) []ElementDetails {
+	result := make([]ElementDetails, 0, len(rows))
+	for _, e := range rows {
+		result = append(result, DBElementRowToDomain(e))
+	}
+	return result
+}
+
 func DBSpaceElementsToArena(space db.GetSpaceByIDRow, rows []db.GetSpaceElementsRow) SpaceWithElements {
 	elements := make([]SpaceElementDetail, 0, len(rows))
 	for _, r := range rows {

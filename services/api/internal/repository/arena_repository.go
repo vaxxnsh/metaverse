@@ -12,6 +12,7 @@ type ArenaRepository interface {
 	GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error)
 	AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error)
 	DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error
+	GetAllElements(ctx context.Context) ([]domain.ElementDetails, error)
 }
 
 type arenaRepository struct {
@@ -40,6 +41,14 @@ func (r *arenaRepository) GetSpaceWithElements(ctx context.Context, spaceId stri
 
 	result := domain.DBSpaceElementsToArena(space, elements)
 	return &result, nil
+}
+
+func (r *arenaRepository) GetAllElements(ctx context.Context) ([]domain.ElementDetails, error) {
+	rows, err := r.queries.GetAllElements(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return domain.MapAllElementsToDomain(rows), nil
 }
 
 func (r *arenaRepository) DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error {

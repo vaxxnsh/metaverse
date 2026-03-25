@@ -1,3 +1,6 @@
+-- name: GetAllElements :many
+SELECT id, image_url, width, height, static FROM elements;
+
 -- name: GetSpaceByID :one
 SELECT id, width, height FROM spaces WHERE id = $1;
 

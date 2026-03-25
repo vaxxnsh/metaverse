@@ -26,6 +26,44 @@ func (q *Queries) DeleteSpaceElement(ctx context.Context, arg DeleteSpaceElement
 	return err
 }
 
+const getAllElements = `-- name: GetAllElements :many
+SELECT id, image_url, width, height, static FROM elements
+`
+
+type GetAllElementsRow struct {
+	ID       pgtype.UUID
+	ImageUrl string
+	Width    int32
+	Height   int32
+	Static   bool
+}
+
+func (q *Queries) GetAllElements(ctx context.Context) ([]GetAllElementsRow, error) {
+	rows, err := q.db.Query(ctx, getAllElements)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllElementsRow
+	for rows.Next() {
+		var i GetAllElementsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ImageUrl,
+			&i.Width,
+			&i.Height,
+			&i.Static,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSpaceByID = `-- name: GetSpaceByID :one
 SELECT id, width, height FROM spaces WHERE id = $1
 `

@@ -71,6 +71,16 @@ func (h *ArenaHandler) DeleteSpaceElement(c *gin.Context) {
 	response.SendSuccess(c, gin.H{}, http.StatusOK)
 }
 
+func (h *ArenaHandler) GetAllElements(c *gin.Context) {
+	elements, err := h.arenaService.GetAllElements(c.Request.Context())
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", err.Error(), struct{}{})
+		return
+	}
+
+	response.SendSuccess(c, gin.H{"elements": elements}, http.StatusOK)
+}
+
 func (h *ArenaHandler) GetSpace(c *gin.Context) {
 	spaceId := c.Param("spaceId")
 

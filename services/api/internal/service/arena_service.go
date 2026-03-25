@@ -11,6 +11,7 @@ type ArenaService interface {
 	GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error)
 	AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error)
 	DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error
+	GetAllElements(ctx context.Context) ([]domain.ElementDetails, error)
 }
 
 type arenaService struct {
@@ -31,4 +32,8 @@ func (s *arenaService) AddElementToSpace(ctx context.Context, spaceId, elementId
 
 func (s *arenaService) DeleteSpaceElement(ctx context.Context, spaceId string, x, y int32) error {
 	return s.repo.DeleteSpaceElement(ctx, spaceId, x, y)
+}
+
+func (s *arenaService) GetAllElements(ctx context.Context) ([]domain.ElementDetails, error) {
+	return s.repo.GetAllElements(ctx)
 }
