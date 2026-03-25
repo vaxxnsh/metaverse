@@ -9,6 +9,7 @@ import (
 
 type MapCreatorService interface {
 	CreateElement(ctx context.Context, imageUrl string, width, height int32, static bool) (*domain.Element, error)
+	UpdateElementImage(ctx context.Context, elementId, imageUrl string) (*domain.Element, error)
 }
 
 type mapCreatorService struct {
@@ -21,4 +22,8 @@ func NewMapCreatorService(repo repository.MapCreatorRepository) MapCreatorServic
 
 func (s *mapCreatorService) CreateElement(ctx context.Context, imageUrl string, width, height int32, static bool) (*domain.Element, error) {
 	return s.repo.CreateElement(ctx, imageUrl, width, height, static)
+}
+
+func (s *mapCreatorService) UpdateElementImage(ctx context.Context, elementId, imageUrl string) (*domain.Element, error) {
+	return s.repo.UpdateElementImage(ctx, elementId, imageUrl)
 }

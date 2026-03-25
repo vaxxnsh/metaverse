@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createElement = `-- name: CreateElement :one
@@ -29,6 +31,32 @@ func (q *Queries) CreateElement(ctx context.Context, arg CreateElementParams) (E
 		arg.Height,
 		arg.Static,
 	)
+	var i Element
+	err := row.Scan(
+		&i.ID,
+		&i.Width,
+		&i.Height,
+		&i.ImageUrl,
+		&i.Static,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateElementImage = `-- name: UpdateElementImage :one
+UPDATE elements SET image_url = $1, updated_at = NOW()
+WHERE id = $2
+RETURNING id, width, height, image_url, static, created_at, updated_at
+`
+
+type UpdateElementImageParams struct {
+	ImageUrl string
+	ID       pgtype.UUID
+}
+
+func (q *Queries) UpdateElementImage(ctx context.Context, arg UpdateElementImageParams) (Element, error) {
+	row := q.db.QueryRow(ctx, updateElementImage, arg.ImageUrl, arg.ID)
 	var i Element
 	err := row.Scan(
 		&i.ID,

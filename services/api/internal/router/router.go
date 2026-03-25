@@ -44,6 +44,7 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 			admin := v1.Group("/admin")
 			{
 				admin.POST("/element", middleware.AuthAdmin(), appHandlers.MapCreatorHandler.CreateElement)
+				admin.PUT("/element/:elementId", middleware.AuthAdmin(), appHandlers.MapCreatorHandler.UpdateElement)
 			}
 			v1.POST("/space/element", middleware.AuthUser(), appHandlers.ArenaHandler.AddElementToSpace)
 			v1.DELETE("/space/element", middleware.AuthUser(), appHandlers.ArenaHandler.DeleteSpaceElement)

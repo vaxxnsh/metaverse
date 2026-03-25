@@ -23,6 +23,28 @@ type createElementRequest struct {
 	Static   bool   `json:"static"`
 }
 
+type updateElementRequest struct {
+	ImageUrl string `json:"imageUrl" binding:"required"`
+}
+
+func (h *MapCreatorHandler) UpdateElement(c *gin.Context) {
+	elementId := c.Param("elementId")
+
+	var req updateElementRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", "INVALID_PAYLOAD", struct{}{})
+		return
+	}
+
+	_, err := h.mapCreatorService.UpdateElementImage(c.Request.Context(), elementId, req.ImageUrl)
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", err.Error(), struct{}{})
+		return
+	}
+
+	response.SendSuccess(c, gin.H{}, http.StatusOK)
+}
+
 func (h *MapCreatorHandler) CreateElement(c *gin.Context) {
 	var req createElementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
