@@ -17,6 +17,34 @@ func NewArenaHandler(arenaService service.ArenaService) *ArenaHandler {
 	return &ArenaHandler{arenaService: arenaService}
 }
 
+type addSpaceElementRequest struct {
+	ElementId string `json:"elementId" binding:"required"`
+	SpaceId   string `json:"spaceId"   binding:"required"`
+	X         int32  `json:"x"         binding:"required"`
+	Y         int32  `json:"y"         binding:"required"`
+}
+
+func (h *ArenaHandler) AddElementToSpace(c *gin.Context) {
+	var req addSpaceElementRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", "INVALID_PAYLOAD", struct{}{})
+		return
+	}
+
+	se, err := h.arenaService.AddElementToSpace(c.Request.Context(), req.SpaceId, req.ElementId, req.X, req.Y)
+	if err != nil {
+		switch err {
+		case domain.ErrInvalidSpaceID, domain.ErrInvalidElementID:
+			response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", err.Error(), struct{}{})
+		default:
+			response.SendError(c, http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", err.Error(), struct{}{})
+		}
+		return
+	}
+
+	response.SendSuccess(c, gin.H{"id": se.ElementID}, http.StatusCreated)
+}
+
 func (h *ArenaHandler) GetSpace(c *gin.Context) {
 	spaceId := c.Param("spaceId")
 

@@ -9,6 +9,7 @@ import (
 
 type ArenaService interface {
 	GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error)
+	AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error)
 }
 
 type arenaService struct {
@@ -21,4 +22,8 @@ func NewArenaService(repo repository.ArenaRepository) ArenaService {
 
 func (s *arenaService) GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error) {
 	return s.repo.GetSpaceWithElements(ctx, spaceId)
+}
+
+func (s *arenaService) AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error) {
+	return s.repo.AddElementToSpace(ctx, spaceId, elementId, x, y)
 }

@@ -38,6 +38,7 @@ func SetupRouter(appHandlers AppHandlers) *gin.Engine {
 			v1.DELETE("/space/:spaceId", middleware.AuthUser(), appHandlers.SpaceHandler.DeleteSpace)
 			v1.GET("/space/all", middleware.AuthUser(), appHandlers.SpaceHandler.GetMySpaces)
 			v1.GET("/space/:spaceId", middleware.AuthUser(), appHandlers.ArenaHandler.GetSpace)
+			v1.POST("/space/element", middleware.AuthUser(), appHandlers.ArenaHandler.AddElementToSpace)
 		}
 	}
 

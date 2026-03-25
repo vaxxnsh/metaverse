@@ -10,6 +10,7 @@ import (
 
 type ArenaRepository interface {
 	GetSpaceWithElements(ctx context.Context, spaceId string) (*domain.SpaceWithElements, error)
+	AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error)
 }
 
 type arenaRepository struct {
@@ -38,4 +39,28 @@ func (r *arenaRepository) GetSpaceWithElements(ctx context.Context, spaceId stri
 
 	result := domain.DBSpaceElementsToArena(space, elements)
 	return &result, nil
+}
+
+func (r *arenaRepository) AddElementToSpace(ctx context.Context, spaceId, elementId string, x, y int32) (*domain.SpaceElement, error) {
+	spaceUUID := pgtype.UUID{}
+	if err := spaceUUID.Scan(spaceId); err != nil || !spaceUUID.Valid {
+		return nil, domain.ErrInvalidSpaceID
+	}
+
+	elementUUID := pgtype.UUID{}
+	if err := elementUUID.Scan(elementId); err != nil || !elementUUID.Valid {
+		return nil, domain.ErrInvalidElementID
+	}
+
+	se, err := r.queries.CreateSpaceElement(ctx, db.CreateSpaceElementParams{
+		SpaceID:   spaceUUID,
+		ElementID: elementUUID,
+		X:         x,
+		Y:         y,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return domain.DBSpaceElementToDomain(se), nil
 }
