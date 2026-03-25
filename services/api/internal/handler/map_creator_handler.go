@@ -45,6 +45,27 @@ func (h *MapCreatorHandler) UpdateElement(c *gin.Context) {
 	response.SendSuccess(c, gin.H{}, http.StatusOK)
 }
 
+type createAvatarRequest struct {
+	ImageUrl string `json:"imageUrl" binding:"required"`
+	Name     string `json:"name"`
+}
+
+func (h *MapCreatorHandler) CreateAvatar(c *gin.Context) {
+	var req createAvatarRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.SendError(c, http.StatusBadRequest, "BAD_REQUEST", "INVALID_PAYLOAD", struct{}{})
+		return
+	}
+
+	avatar, err := h.mapCreatorService.CreateAvatar(c.Request.Context(), req.ImageUrl, req.Name)
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", err.Error(), struct{}{})
+		return
+	}
+
+	response.SendSuccess(c, gin.H{"id": avatar.ID}, http.StatusCreated)
+}
+
 func (h *MapCreatorHandler) CreateElement(c *gin.Context) {
 	var req createElementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

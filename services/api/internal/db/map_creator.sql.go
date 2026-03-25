@@ -11,6 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createAvatar = `-- name: CreateAvatar :one
+INSERT INTO avatars (image_url, name)
+VALUES ($1, $2)
+RETURNING id, image_url, name, created_at, updated_at
+`
+
+type CreateAvatarParams struct {
+	ImageUrl string
+	Name     pgtype.Text
+}
+
+func (q *Queries) CreateAvatar(ctx context.Context, arg CreateAvatarParams) (Avatar, error) {
+	row := q.db.QueryRow(ctx, createAvatar, arg.ImageUrl, arg.Name)
+	var i Avatar
+	err := row.Scan(
+		&i.ID,
+		&i.ImageUrl,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createElement = `-- name: CreateElement :one
 INSERT INTO elements (image_url, width, height, static)
 VALUES ($1, $2, $3, $4)
