@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vaxxnsh/metaverse/api/internal/config"
-	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/shared/db"
 	"github.com/vaxxnsh/metaverse/api/internal/handler"
 	"github.com/vaxxnsh/metaverse/api/internal/repository"
 	"github.com/vaxxnsh/metaverse/api/internal/router"

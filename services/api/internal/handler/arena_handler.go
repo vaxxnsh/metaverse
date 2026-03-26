@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vaxxnsh/metaverse/api/internal/domain"
+	"github.com/vaxxnsh/shared/domain"
 	"github.com/vaxxnsh/metaverse/api/internal/lib/response"
 	"github.com/vaxxnsh/metaverse/api/internal/service"
 )
