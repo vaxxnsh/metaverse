@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/vaxxnsh/metaverse/api/internal/domain"
+	"github.com/vaxxnsh/shared/domain"
 	"github.com/vaxxnsh/metaverse/api/internal/repository"
 )
 

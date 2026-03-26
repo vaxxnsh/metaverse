@@ -3,10 +3,10 @@ package domain
 import (
 	"time"
 
-	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/shared/db"
 )
 
-type Admin struct {
+type User struct {
 	ID        string
 	Name      string
 	Email     string
@@ -16,8 +16,8 @@ type Admin struct {
 	UpdatedAt time.Time
 }
 
-func DBAdminToDomain(user db.Admin) *Admin {
-	return &Admin{
+func DBUserToDomain(user db.User) *User {
+	return &User{
 		ID:        user.ID.String(),
 		Name:      user.Name,
 		Email:     user.Email,

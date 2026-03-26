@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/vaxxnsh/metaverse/api/internal/db"
+import "github.com/vaxxnsh/shared/db"
 
 type Avatar struct {
 	ID       string
