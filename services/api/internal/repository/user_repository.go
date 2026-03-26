@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vaxxnsh/metaverse/api/internal/db"
-	"github.com/vaxxnsh/metaverse/api/internal/domain"
 )
 
 type UserRepository interface {

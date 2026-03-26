@@ -1,3 +1,7 @@
 go 1.25.5
 
-use ./shared
+use (
+	./services/api
+	./services/realtime
+	./shared
+)

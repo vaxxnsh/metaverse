@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vaxxnsh/metaverse/api/internal/db"
+	"github.com/vaxxnsh/shared/db"
 )
 
 type Space struct {
