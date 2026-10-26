@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/vaxxnsh/metaverse/realtime/internal/auth"
 	"github.com/vaxxnsh/metaverse/realtime/internal/space"
 	"github.com/vaxxnsh/metaverse/realtime/internal/ws"
@@ -20,6 +21,10 @@ import (
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+		slog.Error("failed to load .env", "error", err)
+		return
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3001"
