@@ -31,6 +31,7 @@ func NewHTTPHandler(options HTTPHandlerOptions) http.Handler {
 }
 
 // OriginAllowList rejects browser upgrades whose Origin is not configured.
+// Non-browser clients such as Postman do not send Origin and are allowed.
 func OriginAllowList(origins []string) func(*http.Request) bool {
 	allowed := make(map[string]struct{}, len(origins))
 	for _, origin := range origins {
@@ -38,5 +39,12 @@ func OriginAllowList(origins []string) func(*http.Request) bool {
 			allowed[origin] = struct{}{}
 		}
 	}
-	return func(r *http.Request) bool { _, ok := allowed[r.Header.Get("Origin")]; return ok }
+	return func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+		_, ok := allowed[origin]
+		return ok
+	}
 }

@@ -50,8 +50,18 @@ func TestHTTPHandlerReceivesAndSendsEvents(t *testing.T) {
 
 func TestOriginAllowList(t *testing.T) {
 	check := OriginAllowList([]string{"https://app.example.com"})
-	if check(httptest.NewRequest("GET", "/ws", nil)) {
-		t.Fatal("request without allowed origin was accepted")
+	if !check(httptest.NewRequest("GET", "/ws", nil)) {
+		t.Fatal("request without an origin was rejected")
+	}
+	allowed := httptest.NewRequest("GET", "/ws", nil)
+	allowed.Header.Set("Origin", "https://app.example.com")
+	if !check(allowed) {
+		t.Fatal("request with an allowed origin was rejected")
+	}
+	rejected := httptest.NewRequest("GET", "/ws", nil)
+	rejected.Header.Set("Origin", "https://untrusted.example.com")
+	if check(rejected) {
+		t.Fatal("request with an untrusted origin was accepted")
 	}
 }
 

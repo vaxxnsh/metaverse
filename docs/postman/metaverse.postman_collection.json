@@ -1,0 +1,102 @@
+{
+  "info": {
+    "_postman_id": "b164c6d6-5eef-4fc0-bcf4-40f098a99901",
+    "name": "Metaverse API and Realtime",
+    "description": "Select the Metaverse Local environment. Authentication scripts store returned JWTs. HTTP middleware requires that JWT as a token cookie; the realtime join frame carries the same token in its payload.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "apiBaseUrl", "value": "http://localhost:8080/api/v1" },
+    { "key": "realtimeBaseUrl", "value": "http://localhost:3001" },
+    { "key": "wsUrl", "value": "ws://localhost:3001/ws" },
+    { "key": "wsOrigin", "value": "http://localhost:5173" },
+    { "key": "userEmail", "value": "postman.user@example.com" },
+    { "key": "adminEmail", "value": "postman.admin@example.com" },
+    { "key": "password", "value": "password123" },
+    { "key": "userToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "spaceId", "value": "" },
+    { "key": "avatarId", "value": "" },
+    { "key": "elementId", "value": "" },
+    { "key": "mapId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign up user",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates a user', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.test('returns a token', () => pm.expect(body.data).to.be.a('string').and.not.empty);", "pm.collectionVariables.set('userToken', body.data);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman User\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/auth/user/signup" }, "response": []
+        },
+        {
+          "name": "Log in user",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('logs in a user', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('returns a token', () => pm.expect(body.data).to.be.a('string').and.not.empty);", "pm.collectionVariables.set('userToken', body.data);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/auth/user/login" }, "response": []
+        },
+        {
+          "name": "Sign up admin",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates an admin', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('adminToken', pm.response.json().data);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Admin\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/auth/admin/signup" }, "response": []
+        },
+        {
+          "name": "Log in admin",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('logs in an admin', () => pm.response.to.have.status(200));", "pm.collectionVariables.set('adminToken', pm.response.json().data);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/auth/admin/login" }, "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin content",
+      "description": "Protected requests use Cookie: token={{adminToken}} because the API does not use a Bearer authorization header.",
+      "item": [
+        {
+          "name": "Create avatar",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates an avatar', () => pm.response.to.have.status(201));", "const id = pm.response.json().data.id;", "if (id) pm.collectionVariables.set('avatarId', id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{adminToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Avatar\",\n  \"imageUrl\": \"https://example.com/avatar.png\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/admin/avatar" }, "response": []
+        },
+        {
+          "name": "Create element",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates an element', () => pm.response.to.have.status(201));", "const id = pm.response.json().data.id;", "if (id) pm.collectionVariables.set('elementId', id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{adminToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"imageUrl\": \"https://example.com/tree.png\",\n  \"width\": 2,\n  \"height\": 2,\n  \"static\": true\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/admin/element" }, "response": []
+        },
+        { "name": "Update element image", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{adminToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"imageUrl\": \"https://example.com/tree-v2.png\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/admin/element/{{elementId}}" }, "response": [] },
+        {
+          "name": "Create map",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates a map', () => pm.response.to.have.status(201));", "const id = pm.response.json().data.id;", "if (id) pm.collectionVariables.set('mapId', id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{adminToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Map\",\n  \"thumbnail\": \"https://example.com/map.png\",\n  \"width\": 100,\n  \"height\": 100,\n  \"defaultElements\": [{ \"elementId\": \"{{elementId}}\", \"x\": 10, \"y\": 10 }]\n}", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/admin/map" }, "response": []
+        },
+        { "name": "Update admin avatar", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{adminToken}}" }], "body": { "mode": "raw", "raw": "{ \"avatarId\": \"{{avatarId}}\" }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/admin/metadata" }, "response": [] }
+      ]
+    },
+    {
+      "name": "User and spaces",
+      "description": "Protected requests use Cookie: token={{userToken}}. Create an element and a space before the space-element and WebSocket flow.",
+      "item": [
+        {
+          "name": "Create space",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('creates a space', () => pm.response.to.have.status(201));", "const space = pm.response.json().data.space;", "if (space && space.id) pm.collectionVariables.set('spaceId', space.id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{userToken}}" }], "body": { "mode": "raw", "raw": "{ \"name\": \"Postman Space\", \"width\": 100, \"height\": 100, \"mapId\": \"{{mapId}}\" }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/space" }, "response": []
+        },
+        { "name": "List my spaces", "request": { "method": "GET", "header": [{ "key": "Cookie", "value": "token={{userToken}}" }], "url": "{{apiBaseUrl}}/space/all" }, "response": [] },
+        { "name": "Get space", "request": { "method": "GET", "header": [{ "key": "Cookie", "value": "token={{userToken}}" }], "url": "{{apiBaseUrl}}/space/{{spaceId}}" }, "response": [] },
+        { "name": "Delete space", "request": { "method": "DELETE", "header": [{ "key": "Cookie", "value": "token={{userToken}}" }], "url": "{{apiBaseUrl}}/space/{{spaceId}}" }, "response": [] },
+        { "name": "Update user avatar", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{userToken}}" }], "body": { "mode": "raw", "raw": "{ \"avatarId\": \"{{avatarId}}\" }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/user/metadata" }, "response": [] },
+        { "name": "Get user avatars in bulk", "request": { "method": "GET", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{userToken}}" }], "body": { "mode": "raw", "raw": "{ \"userIds\": [] }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/user/metadata/bulk" }, "response": [] },
+        { "name": "List elements", "request": { "method": "GET", "header": [{ "key": "Cookie", "value": "token={{userToken}}" }], "url": "{{apiBaseUrl}}/elements" }, "response": [] },
+        { "name": "Add element to space", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{userToken}}" }], "body": { "mode": "raw", "raw": "{ \"spaceId\": \"{{spaceId}}\", \"elementId\": \"{{elementId}}\", \"x\": 10, \"y\": 10 }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/space/element" }, "response": [] },
+        { "name": "Remove element from space", "request": { "method": "DELETE", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{userToken}}" }], "body": { "mode": "raw", "raw": "{ \"spaceId\": \"{{spaceId}}\", \"x\": 10, \"y\": 10 }", "options": { "raw": { "language": "json" } } }, "url": "{{apiBaseUrl}}/space/element" }, "response": [] }
+      ]
+    },
+    {
+      "name": "Realtime WebSocket",
+      "description": "Open Connect WebSocket, then use Postman's message composer. The Origin header must match `WS_ALLOWED_ORIGINS` in `services/realtime/.env`.\n\nJoin frame:\n```json\n{\n  \"type\": \"join\",\n  \"payload\": { \"spaceId\": \"{{spaceId}}\", \"token\": \"{{userToken}}\" }\n}\n```\n\nMovement frame:\n```json\n{\n  \"type\": \"move\",\n  \"payload\": { \"x\": 10, \"y\": 10 }\n}\n```\n\nServer events: `space-joined`, `user-joined`, `movement`, `movement-rejected`, `user-left`, and `error`.",
+      "item": [
+        { "name": "Health check", "request": { "method": "GET", "url": "{{realtimeBaseUrl}}/healthz" }, "response": [] },
+        { "name": "Readiness check", "request": { "method": "GET", "url": "{{realtimeBaseUrl}}/readyz" }, "response": [] },
+        { "name": "Metrics", "request": { "method": "GET", "url": "{{realtimeBaseUrl}}/metrics" }, "response": [] },
+        { "name": "Connect WebSocket", "request": { "method": "GET", "header": [{ "key": "Origin", "value": "{{wsOrigin}}" }], "url": "{{wsUrl}}", "description": "Connect, then send the documented join frame." }, "response": [] }
+      ]
+    }
+  ]
+}
